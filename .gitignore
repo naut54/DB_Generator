@@ -1,0 +1,32 @@
+# Bytecode de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Entornos virtuales
+env/
+venv/
+.venv/
+
+# Archivos de configuración o entorno
+*.env
+*.env.*
+
+# Archivos de log
+*.log
+
+# Bases de datos temporales
+*.sqlite3
+*.db
+
+# Archivos de usuario de editores
+*.swp
+*.swo
+*.bak
+
+# VSCode
+.vscode/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
