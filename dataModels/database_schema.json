@@ -1,0 +1,57 @@
+{
+  "database_name": "db_test",
+  "tables": [
+    {
+      "name": "usuarios",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "constraints": ["PRIMARY KEY", "AUTO_INCREMENT"]
+        },
+        {
+          "name": "nombre",
+          "type": "VARCHAR(100)",
+          "constraints": ["NOT NULL"]
+        },
+        {
+          "name": "email",
+          "type": "VARCHAR(255)",
+          "constraints": ["UNIQUE", "NOT NULL"]
+        },
+        {
+          "name": "fecha_creacion",
+          "type": "TIMESTAMP",
+          "constraints": ["DEFAULT CURRENT_TIMESTAMP"]
+        }
+      ]
+    },
+    {
+      "name": "productos",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "constraints": ["PRIMARY KEY", "AUTO_INCREMENT"]
+        },
+        {
+          "name": "nombre",
+          "type": "VARCHAR(200)",
+          "constraints": ["NOT NULL"]
+        },
+        {
+          "name": "precio",
+          "type": "DECIMAL(10,2)",
+          "constraints": ["NOT NULL"]
+        }
+      ]
+    }
+  ],
+  "indexes": [
+    {
+      "name": "idx_usuarios_email",
+      "table": "usuarios",
+      "columns": ["email"]
+    }
+  ]
+}
