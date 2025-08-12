@@ -154,3 +154,77 @@ class Connection:
         except Exception as e:
             print(e)
             return False
+
+    def execute_query_with_results(self, sql_query, database=None, format_output='dict'):
+        try:
+            timestamp = int(time.time())
+            temp_sql_file = f"/tmp/temp_query_{timestamp}.sql"
+
+            create_file_cmd = f"cat > {temp_sql_file} << 'EOF'\n{sql_query}\nEOF"
+
+            stdin, stdout, stderr = self.ssh.exec_command(create_file_cmd)
+            create_exit_status = stdout.channel.recv_exit_status()
+
+            if create_exit_status != 0:
+                print(f"Error creando archivo temporal")
+                return None
+
+            if database:
+                mysql_cmd = f"mysql -u {self.MYSQL_USER} -p'{self.MYSQL_PASSWORD}' -h {self.MYSQL_HOST} {database} --batch --raw -e \"{sql_query}\""
+            else:
+                mysql_cmd = f"mysql -u {self.MYSQL_USER} -p'{self.MYSQL_PASSWORD}' -h {self.MYSQL_HOST} --batch --raw -e \"{sql_query}\""
+
+            stdin, stdout, stderr = self.ssh.exec_command(mysql_cmd)
+            exit_status = stdout.channel.recv_exit_status()
+
+            output = stdout.read().decode('utf-8').strip()
+            error = stderr.read().decode('utf-8').strip()
+
+            cleanup_cmd = f"rm -f {temp_sql_file}"
+            self.ssh.exec_command(cleanup_cmd)
+
+            if exit_status != 0:
+                print(f"Error ejecutando consulta: {error}")
+                return None
+
+            if not output:
+                return []
+
+            lines = output.strip().split('\n')
+            if len(lines) < 2:
+                return []
+
+            headers = [h.strip() for h in lines[0].split('\t')]
+
+            results = []
+
+            for i, line in enumerate(lines[1:], 1):
+                if line.strip():
+                    values = line.split('\t')
+
+                    while len(values) < len(headers):
+                        values.append(None)
+
+                    row_dict = {}
+                    for j, header in enumerate(headers):
+                        value = values[j] if j < len(values) else None
+
+                        if value == 'NULL' or value == '\\N' or value == '':
+                            value = None
+
+                        row_dict[header] = value
+
+                    results.append(row_dict)
+
+            print(f"✓ Consulta ejecutada: {len(results)} filas obtenidas")
+            return results
+
+        except Exception as e:
+            print(f"Error ejecutando consulta con resultados: {e}")
+            import traceback
+            traceback.print_exc()
+            return None
+
+    def get_databases_list(self):
+        query = "SELECT schema_name as database_name FROM information_schema.schemata WHERE schema_name NOT IN ('information_schema', 'performance_schema', 'mysql', 'sys')"
+        return self.execute_query_with_results(query)

@@ -1,6 +1,7 @@
 import json
 import os
 from typing import Dict, List, Any
+from datetime import datetime
 
 class SchemaBuilder:
     def __init__(self, schema_file: str = "database_schema.json"):
@@ -132,3 +133,150 @@ class SchemaBuilder:
 
         print(f"✓ Base de datos '{database_name}' creada exitosamente")
         return True
+
+    def extract_database_schema(self, connection, database_name: str, output_file: str = None) -> bool:
+        try:
+            print(f"Extrayendo esquema de la base de datos: {database_name}")
+
+            db_check_query = f"SHOW DATABASES LIKE '{database_name}'"
+            db_exists = connection.execute_query_with_results(db_check_query)
+
+            if not db_exists:
+                print(f"Error: La base de datos '{database_name}' no existe")
+                return False
+
+            schema_data = {
+                "database_name": database_name,
+                "tables": [],
+                "indexes": []
+            }
+
+            tables_query = f"SHOW TABLES FROM {database_name}"
+
+            tables_result = connection.execute_query_with_results(tables_query)
+
+            if not tables_result:
+                print(f"No se encontraron tablas en la base de datos {database_name}")
+                schema_data["tables"] = []
+            else:
+                print(f"Encontradas {len(tables_result)} tablas")
+
+                for table_row in tables_result:
+
+                    table_name = list(table_row.values())[0] if table_row else None
+
+                    if not table_name:
+                        continue
+
+                    print(f"Procesando tabla: {table_name}")
+
+                    columns_query = f"SHOW COLUMNS FROM {database_name}.{table_name}"
+
+                    columns_result = connection.execute_query_with_results(columns_query)
+
+                    table_data = {
+                        "name": table_name,
+                        "columns": []
+                    }
+
+                    if columns_result:
+                        for column_row in columns_result:
+
+                            column_data = {
+                                "name": column_row.get('Field', ''),
+                                "type": self._parse_mysql_type(column_row.get('Type', '')),
+                                "constraints": self._extract_mysql_constraints(column_row)
+                            }
+                            table_data["columns"].append(column_data)
+
+                    schema_data["tables"].append(table_data)
+
+            if output_file is None:
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                output_file = f"dataModels/{database_name}_schema_{timestamp}.json"
+
+            os.makedirs(os.path.dirname(output_file), exist_ok=True)
+
+            with open(output_file, 'w', encoding='utf-8') as file:
+                json.dump(schema_data, file, indent=2, ensure_ascii=False)
+
+            print(f"✓ Esquema extraído exitosamente: {output_file}")
+            self._show_extraction_summary(schema_data)
+
+            return True
+
+        except Exception as e:
+            print(f"Error extrayendo esquema: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
+
+    def _parse_mysql_type(self, type_string: str) -> str:
+        return type_string.upper() if type_string else "VARCHAR(255)"
+
+    def _extract_mysql_constraints(self, column_info: dict) -> List[str]:
+        constraints = []
+
+        key = column_info.get('Key', '') or ''
+        if key == 'PRI':
+            constraints.append('PRIMARY KEY')
+        elif key == 'UNI':
+            constraints.append('UNIQUE')
+
+        extra = column_info.get('Extra')
+        if extra is not None and extra.strip() and 'auto_increment' in extra.lower():
+            constraints.append('AUTO_INCREMENT')
+
+        null_allowed = column_info.get('Null', '') or ''
+        if null_allowed == 'NO':
+            constraints.append('NOT NULL')
+
+        default = column_info.get('Default')
+        if default is not None and default != 'NULL':
+            if default == 'CURRENT_TIMESTAMP':
+                constraints.append('DEFAULT CURRENT_TIMESTAMP')
+            else:
+                constraints.append(f"DEFAULT '{default}'")
+
+        return constraints
+
+    def _build_column_type(self, column_info: dict) -> str:
+        data_type = column_info['data_type'].upper()
+
+        if column_info['character_maximum_length']:
+            return f"{data_type}({column_info['character_maximum_length']})"
+        elif column_info['numeric_precision'] and column_info['numeric_scale'] is not None:
+            return f"{data_type}({column_info['numeric_precision']},{column_info['numeric_scale']})"
+        else:
+            return data_type
+
+    def _extract_column_constraints(self, column_info: dict) -> List[str]:
+        constraints = []
+
+        if column_info['column_key'] == 'PRI':
+            constraints.append('PRIMARY KEY')
+        elif column_info['column_key'] == 'UNI':
+            constraints.append('UNIQUE')
+
+        if column_info['extra'] and 'auto_increment' in column_info['extra'].lower():
+            constraints.append('AUTO_INCREMENT')
+
+        if column_info['is_nullable'] == 'NO':
+            constraints.append('NOT NULL')
+
+        if column_info['column_default'] is not None:
+            if column_info['column_default'] == 'CURRENT_TIMESTAMP':
+                constraints.append('DEFAULT CURRENT_TIMESTAMP')
+            else:
+                constraints.append(f"DEFAULT '{column_info['column_default']}'")
+
+        return constraints
+
+    def _show_extraction_summary(self, schema_data: dict):
+        print(f"\n=== RESUMEN DE EXTRACCIÓN ===")
+        print(f"Base de datos: {schema_data['database_name']}")
+        print(f"Tablas extraídas: {len(schema_data['tables'])}")
+        print(f"Índices extraídos: {len(schema_data['indexes'])}")
+
+        for table in schema_data['tables']:
+            print(f"  • {table['name']}: {len(table['columns'])} columnas")

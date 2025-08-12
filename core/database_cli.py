@@ -17,6 +17,7 @@ class DatabaseCLI:
         print("2. Mostrar bases de datos existentes")
         print("3. Mostrar tablas de una base de datos")
         print("4. Probar conexión SSH/MySQL")
+        print("5. Extraer esquema de base de datos existente")  # NUEVA OPCIÓN
         print("0. Volver al menú principal")
         print("-"*50)
 
@@ -170,6 +171,65 @@ class DatabaseCLI:
 
         self.establish_connection()
 
+    def extract_schema_option(self):
+        print("\nEXTRAER ESQUEMA DE BASE DE DATOS")
+
+        if not self.establish_connection():
+            return
+
+        try:
+            print("\nBases de datos disponibles:")
+            databases = self.connection.get_databases_list()
+
+            if not databases:
+                print("No se encontraron bases de datos disponibles")
+                return
+
+            print("\n" + "-"*40)
+            print("   SELECCIONA UNA BASE DE DATOS")
+            print("-"*40)
+
+            for i, db in enumerate(databases, 1):
+                print(f"{i}. {db['database_name']}")
+
+            print("0. Cancelar")
+            print("-"*40)
+
+            while True:
+                try:
+                    choice = int(input("Selecciona una base de datos (número): "))
+                    if choice == 0:
+                        print("Operación cancelada")
+                        return
+                    elif 1 <= choice <= len(databases):
+                        selected_db = databases[choice - 1]['database_name']
+                        break
+                    else:
+                        print("Opción inválida. Intenta de nuevo.")
+                except ValueError:
+                    print("Por favor, introduce un número válido.")
+
+            print(f"\nBase de datos seleccionada: {selected_db}")
+
+            # Preguntar por nombre de archivo personalizado (opcional)
+            custom_name = input("\nNombre personalizado para el archivo (Enter para auto): ").strip()
+            output_file = None
+            if custom_name:
+                if not custom_name.endswith('.json'):
+                    custom_name += '.json'
+                output_file = f"dataModels/{custom_name}"
+
+            schema_builder = SchemaBuilder()
+
+            print(f"\nExtrayendo esquema de '{selected_db}'...")
+            if schema_builder.extract_database_schema(self.connection, selected_db, output_file):
+                print("\n✓ Extracción de esquema completada exitosamente")
+            else:
+                print("\n✗ Error en la extracción del esquema")
+
+        except Exception as e:
+            print(f"Error: {e}")
+
     def close_connection(self):
         if self.connection:
             try:
@@ -191,6 +251,8 @@ class DatabaseCLI:
             self.show_tables_option()
         elif choice == '4':
             self.test_connection_option()
+        elif choice == '5':  # NUEVA OPCIÓN
+            self.extract_schema_option()
         elif choice == '0':
             print("\n↩Regresando al menú principal...")
             self.running = False
