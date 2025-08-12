@@ -2,7 +2,7 @@
 
 Sistema completo para gestionar bases de datos MySQL remotas y realizar backups automatizados a través de conexiones SSH.
 
-## 📋 Características
+## Características
 
 - **Gestión de Bases de Datos**: Crear, listar y gestionar bases de datos MySQL remotas
 - **Constructor de Esquemas**: Crear estructuras de BD desde archivos JSON
@@ -11,7 +11,7 @@ Sistema completo para gestionar bases de datos MySQL remotas y realizar backups 
 - **Conexión SSH Segura**: Gestión remota mediante claves SSH
 - **Interfaz CLI**: Menús interactivos fáciles de usar
 
-## 🚀 Instalación
+## Instalación
 
 ### Prerrequisitos
 
@@ -42,8 +42,8 @@ DB_Generator/
 │   └── database_schema.json
 ├── saved_backups/
 ├── main.py
-├── .env                    # ⚠️ DEBE llamarse exactamente así
-├── config.yaml            # ⚠️ DEBE llamarse exactamente así
+├── .env                    # ⚠ DEBE llamarse exactamente así
+├── config.yaml            # ⚠ DEBE llamarse exactamente así
 └── README.md
 ```
 
@@ -51,7 +51,7 @@ DB_Generator/
 
 ### 1. Archivo de Entorno (.env)
 
-**⚠️ IMPORTANTE**: El archivo DEBE llamarse exactamente `.env` (con el punto al inicio).
+**⚠ IMPORTANTE**: El archivo DEBE llamarse exactamente `.env` (con el punto al inicio).
 
 Crea el archivo `.env` en el directorio raíz con la siguiente estructura:
 
@@ -70,7 +70,7 @@ MYSQL_HOST=localhost
 
 ### 2. Archivo de Configuración de Backups (config.yaml)
 
-**⚠️ IMPORTANTE**: El archivo DEBE llamarse exactamente `config.yaml`.
+**⚠ IMPORTANTE**: El archivo DEBE llamarse exactamente `config.yaml`.
 
 Crea el archivo `config.yaml` en el directorio raíz:
 
@@ -116,7 +116,7 @@ ssh-copy-id -i ~/.ssh/id_rsa.pub usuario@tu_servidor
 ssh usuario@tu_servidor
 ```
 
-## 📁 Esquemas de Base de Datos
+## Esquemas de Base de Datos
 
 ### Formato JSON para Esquemas
 
@@ -182,7 +182,7 @@ Los archivos de esquema deben estar en formato JSON. Ejemplo (`dataModels/mi_esq
 }
 ```
 
-## 🖥️ Uso de la Aplicación
+## Uso de la Aplicación
 
 ### Ejecutar la Aplicación
 
@@ -202,7 +202,7 @@ python main.py
 --------------------------------------------------
 ```
 
-## 💾 Gestión de Bases de Datos
+## Gestión de Bases de Datos
 
 ### Opciones Disponibles
 
@@ -222,7 +222,7 @@ python main.py
    - Todas las tablas con sus columnas
    - Los índices definidos
 
-## 🔄 Sistema de Backups
+## Sistema de Backups
 
 ### Tipos de Backup
 
@@ -251,7 +251,7 @@ backup:
     - "/home/usuario/docs" # Documentos de usuario
 ```
 
-## 📝 Ejemplos de Uso
+## Ejemplos de Uso
 
 ### Crear una Base de Datos
 
@@ -284,14 +284,14 @@ backup:
    - Opción 2: Manage Backups
    - Opción 1: Ejecutar backup completo
 
-## ⚠️ Consideraciones de Seguridad
+## ⚠ Consideraciones de Seguridad
 
 - **Nunca** subas los archivos `.env` o `config.yaml` al control de versiones
 - Usa permisos restrictivos en las claves SSH (600)
 - Considera usar un usuario específico para backups con permisos limitados
 - Realiza pruebas de restauración periódicamente
 
-## 🔧 Solución de Problemas
+## Solución de Problemas
 
 ### Error de Conexión SSH
 
@@ -319,17 +319,17 @@ mysql -u root -p
 - Revisa la sintaxis YAML con un validador online
 - Asegúrate de que las rutas en los archivos sean correctas
 
-## 📚 Estructura de Archivos de Configuración
+## Estructura de Archivos de Configuración
 
-### ✅ Nombres Correctos
+### Nombres Correctos
 - `.env` (con punto al inicio)
 - `config.yaml` (exactamente así)
 
-### ❌ Nombres Incorrectos
+### Nombres Incorrectos
 - `env`, `environment.env`, `.env.txt`
 - `config.yml`, `backup_config.yaml`, `config.txt`
 
-## 🤝 Contribución
+## Contribución
 
 Para contribuir al proyecto:
 
@@ -339,7 +339,7 @@ Para contribuir al proyecto:
 4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
 5. Crea un Pull Request
 
-## 📄 Licencia
+## Licencia
 
 Este proyecto está bajo la Licencia MIT. Ver el archivo LICENSE para más detalles.
 
