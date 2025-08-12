@@ -1,4 +1,4 @@
-from core import DatabaseCLI, BackupCLI
+from core import DatabaseCLI, BackupCLI, DevelopmentCLI
 
 class MainApplication:
     def __init__(self):
@@ -10,7 +10,8 @@ class MainApplication:
         print("="*50)
         print("1. Manage Databases")
         print("2. Manage Backups")
-        print("3. Exit")
+        print("3. Development Tools")
+        print("4. Exit")
         print("-"*50)
 
     def databases_option(self):
@@ -33,6 +34,14 @@ class MainApplication:
 
         print("\nRegresando al menú principal...")
 
+    def development_option(self):
+        print("\nIniciando módulo de herramientas de desarrollo...")
+        try:
+            development_cli = DevelopmentCLI()
+            development_cli.run()
+        except Exception as e:
+            print(f"Error en el módulo de herramientas de desarrollo: {e}")
+
     def exit_option(self):
         print("\nCerrando aplicación...")
         print("¡Gracias por usar el sistema!")
@@ -44,13 +53,15 @@ class MainApplication:
         elif choice == '2':
             self.backup_option()
         elif choice == '3':
+            self.development_option()
+        elif choice == '4':
             self.exit_option()
         else:
             print("Opción inválida. Por favor, selecciona 1, 2 o 3.")
 
     def run(self):
         print("Bienvenido al Sistema de Gestión")
-        print("Versión 1.0")
+        print("Versión 1.9")
 
         while self.running:
             try:
